@@ -1,7 +1,7 @@
 (ns izettle-rest.user.protocol)
 (defprotocol IUser
-  (getById [id])
-  (delete [id])
-  (addLoginTimeStamp [])
-  (addUser [username password]))
+  (authenticate [this username password])
+  (delete [this username])
+  (get-timestamps [this username])
+  (add-user [this username password]))
 

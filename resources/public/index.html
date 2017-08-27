@@ -1,13 +1,99 @@
 <html>
     <head>
         <title>izettle rest</title>
+        <script src="https://unpkg.com/vue"></script>
+        <script type="text/javascript">
+         window.onload = function() {
+             new Vue({
+                 el: '#app',
+                 data: {
+                     currentPart: 'login',
+                     message: '',
+                     timestamps: [],
+                     username:'',
+                     password:'',
+                     password2:'',
+                 },
+                 methods: {
+                     login: function (event) {
+                         fetch('/api/login', {
+                             method: 'POST',
+                             headers: {
+                              'Content-Type': 'application/x-www-form-urlencoded'
+                             },
+                             body: 'username=' + this.username + '&password=' + this.password
+
+                         }).then(response => {
+                             if (response.status !== 200) {
+                                 this.message = 'Login failed!'
+                             } else {
+                                 response.json().then(data => {
+                                   this.timestamps = data.timestamps;
+                                   this.message = ''
+                                   this.currentPart = 'timestamps';
+                                 });
+                             }
+                         });
+                     },
+                     logout: function (event) {
+                         fetch('/api/logout').then(response => {
+                             if (response.status !== 200) {
+                                 this.messasge = 'Logout failed';
+                             } else {
+                                 this.currentPart = 'login';
+                                 this.message = '';
+                             }
+                         });
+                     },
+                     createUser: function (event) {
+                         fetch('/api/createuser', {
+                             method: 'PUT',
+                             headers: {
+                              'Content-Type': 'application/json'
+                             },
+                             body: JSON.stringify({username: this.username, password: this.password})
+                         }).then(response => {
+                             if (response.status === 422) {
+                                 this.message = 'User already exist!';
+                             } else if (response.status === 200) {
+                                 this.message = 'User created!';
+                             } else {
+                                   this.message = 'Cannot create user. Try again later';
+                             }
+                         });
+                     }
+                 }
+             })
+         }
+        </script>
     </head>
     <body>
-        Hello izettle!
-        <form action="/api/login" method="post">
-            username: <input name="username" type="text"><br>
-            password: <input name="password" type="password"><br>
-            <input type="submit" value="Submit">
-        </form>
+        <div id="app">
+            <div v-if="currentPart === 'login'">
+                <h3>Login</h3>
+                username: <input v-model="username" name="username" type="text"><br>
+                password: <input v-model="password" name="password" type="password"><br>
+                <button v-on:click="login">Login</button>
+                <button v-on:click="currentPart = 'createUser'">Create User</button> 
+            </div>
+            <div v-else-if="currentPart === 'createUser'">
+                <h3>Create User</h3>
+                username: <input v-model ="username" name="username" type="text"><br>
+                password: <input v-model="password" name="password" type="password"><br>
+                repeat password: <input v-model="password2" name="password2" type="password"><br>
+                <p v-if="password !== password2"> passwords do not match</p>
+                <button v-on:click="createUser">Submit</button>
+                <button v-on:click="currentPart = 'login'">Login</button>
+            </div>
+            <div v-else>
+                <ul>
+                  <li v-for="timestamp in timestamps">
+                    {{ timestamp }}
+                  </li>
+                </ul>
+                <button v-on:click="logout">Log out</button>
+            </div>
+            <p>{{ message }}</p>
+        </div>
     </body>
 </html>

@@ -19,7 +19,6 @@
   (route/resources "/"))
 
 (defn api-routes [service]
- ;; (println (str user-service))
   (routes (context "/api" []
                    (context "/users" []
                             (GET "/:username" [username :as request]
@@ -31,7 +30,7 @@
                    (POST "/login" [username password :as request]
                          (if-let [user (user-service/authenticate service username password)]
                            (let [updated-session (assoc (:session request) :identity (keyword username))]
-                            (-> (response nil)
+                            (-> (response user)
                                 (assoc :session updated-session)))
                            (status (response nil) 401)))
                    (ANY "*" [] (route/not-found "")))))
@@ -49,5 +48,13 @@
        (wrap-defaults defaults))
    (wrap-defaults site-routes site-defaults)))
 
-(def app (config-app nil))
+(defrecord inmemory-user-service []
+  user-service/IUser
+  (get-timestamps [this username] nil)
+  (delete [this username] nil)
+  (authenticate [this username password] (when (= username "test") {:timestamps [1 2 3]}))
+  (add-user [this username password] nil))
+
+
+(def app (config-app (->inmemory-user-service)))
  

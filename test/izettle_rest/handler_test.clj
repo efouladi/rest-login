@@ -8,9 +8,8 @@
 (defrecord mocked-user-service []
   user-service/IUser
   (get-timestamps [this username] nil)
-  (delete [this username] nil)
   (authenticate [this username password] (when (= username "test") true))
-  (add-user [this username password] nil))
+  (add-user! [this username password] nil))
 
 (defn get-app []
   (config-app (->mocked-user-service)))

@@ -10,6 +10,7 @@
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
             [izettle-rest.user.protocol :as user-service]
+            [izettle-rest.user.inmemory-user-service :refer (->UserDB)]
             ))
 
 
@@ -48,13 +49,5 @@
        (wrap-defaults defaults))
    (wrap-defaults site-routes site-defaults)))
 
-(defrecord inmemory-user-service []
-  user-service/IUser
-  (get-timestamps [this username] nil)
-  (delete [this username] nil)
-  (authenticate [this username password] (when (= username "test") {:timestamps [1 2 3]}))
-  (add-user [this username password] nil))
-
-
-(def app (config-app (->inmemory-user-service)))
+(def app (config-app (->UserDB (atom []) (fn [x] (str x "plushash")))))
  

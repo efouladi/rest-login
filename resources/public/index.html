@@ -61,6 +61,14 @@
                                    this.message = 'Cannot create user. Try again later';
                              }
                          });
+                     },
+                     gotoPart: function (part) {
+                         this.currentPart = part;
+                         this.username = '';
+                         this.password = '';
+                         this.password2 = '';
+                         this.message = '';
+
                      }
                  }
              })
@@ -74,7 +82,7 @@
                 username: <input v-model="username" name="username" type="text"><br>
                 password: <input v-model="password" name="password" type="password"><br>
                 <button v-on:click="login">Login</button>
-                <button v-on:click="currentPart = 'createUser'">Create User</button> 
+                <button v-on:click="gotoPart('createUser')">Create User</button> 
             </div>
             <div v-else-if="currentPart === 'createUser'">
                 <h3>Create User</h3>
@@ -83,7 +91,7 @@
                 repeat password: <input v-model="password2" name="password2" type="password"><br>
                 <p v-if="password !== password2"> passwords do not match</p>
                 <button v-on:click="createUser">Submit</button>
-                <button v-on:click="currentPart = 'login'">Login</button>
+                <button v-on:click="gotoPart('login')">Login</button>
             </div>
             <div v-else>
                 <ul>

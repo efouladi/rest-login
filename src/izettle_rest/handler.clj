@@ -8,7 +8,7 @@
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.util.response :refer [redirect response status]]
             [buddy.auth.backends :as backends]
-            [buddy.auth.middleware :refer [wrap-authentication]]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.hashers :as hashers]
             [izettle-rest.user.protocol :as user-service]
@@ -27,7 +27,7 @@
                             (GET "/:username" [username :as request]
                                  (if-not (authenticated? request)
                                    (throw-unauthorized)
-                                   username))
+                                   (response  {:timestamps (user-service/get-timestamps service username)})))
                             (POST "/createuser" request
                                  (let [username (get-in request [:body "username"]) password (get-in request [:body "password"])]
                                    (if (or (s/blank? username) (s/blank? password))
@@ -51,11 +51,14 @@
                   (assoc :session true)
                   (assoc-in [:responses :content-types] false)))
 
+(def auth-backend (backends/session))
+
 (defn config-app [service]
   (routes
    (-> service
        (api-routes)
-       (wrap-authentication (backends/session))
+       (wrap-authorization auth-backend)
+       (wrap-authentication auth-backend)
        (wrap-json-response)
        (wrap-json-body)
        (wrap-defaults defaults))

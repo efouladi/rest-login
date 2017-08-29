@@ -2,17 +2,12 @@
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
             [izettle-rest.handler :refer :all]
+            [izettle-rest.user.inmemory-user-service :refer (->UserDB)]
             [izettle-rest.user.protocol :as user-service]))
 
 
-(defrecord mocked-user-service []
-  user-service/IUser
-  (get-timestamps [this username] nil)
-  (authenticate [this username password] (when (= username "test") true))
-  (add-user! [this username password] nil))
-
 (defn get-app []
-  (config-app (->mocked-user-service)))
+  (config-app (->UserDB (atom [{:username "test" :password "testpassplushash"}]) (fn [x] (str x "plushash")))))
 
 (deftest test-app
   (testing "main route"
@@ -30,5 +25,22 @@
       (is (= (:status response) 401))))
 
   (testing "login success"
-    (let [response ((get-app) (mock/request :post "/api/login" {:username "test", :password ""}))]
+    (let [response ((get-app) (mock/request :post "/api/login" {:username "test", :password "testpass"}))]
       (is (= (:status response) 200)))))
+
+(deftest creatUser
+  (def server (get-app))
+  (testing "create user and expecting to get username"
+    (let [response (server (-> (mock/request :post "/api/users/createuser")
+                                  (mock/content-type "application/json")
+                                  (mock/body "{\"username\": \"test2\", \"password\":\"testpass\"}")))]
+      
+      (is (= (:status response) 200))
+      (is (= (:body response) "test2"))))
+  (testing "create existing user"
+    (let [response (server (-> (mock/request :post "/api/users/createuser")
+                                  (mock/content-type "application/json")
+                                  (mock/body "{\"username\": \"test2\", \"password\":\"testpass\"}")))]
+      
+      (is (= (:status response) 417))
+      (is (= (:body response) nil)))))

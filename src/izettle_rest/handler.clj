@@ -1,10 +1,11 @@
 (ns izettle-rest.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [clojure.string :as s]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults api-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.params :refer [wrap-params]]
-            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.util.response :refer [redirect response status]]
             [buddy.auth.backends :as backends]
             [buddy.auth.middleware :refer [wrap-authentication]]
@@ -25,7 +26,16 @@
                             (GET "/:username" [username :as request]
                                  (if-not (authenticated? request)
                                    (throw-unauthorized)
-                                   username)))
+                                   username))
+                            (POST "/createuser" request
+                                 (let [username (get-in request [:body "username"]) password (get-in request [:body "password"])]
+                                   (if (or (s/blank? username) (s/blank? password))
+                                     (status (response nil) 400)
+                                     (if-let [created-username (:username (user-service/add-user! service username password))]
+                                       (response created-username)
+                                       (status (response nil) 417)))))
+                            )
+
                    (GET "/logout" [] (-> (response nil)
                                          (assoc :session {})))
                    (POST "/login" [username password :as request]
@@ -46,6 +56,7 @@
        (api-routes)
        (wrap-authentication (backends/session))
        (wrap-json-response)
+       (wrap-json-body)
        (wrap-defaults defaults))
    (wrap-defaults site-routes site-defaults)))
 

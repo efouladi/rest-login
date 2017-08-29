@@ -34,16 +34,16 @@
                                      (status (response nil) 400)
                                      (if-let [created-username (:username (user-service/add-user! service username password))]
                                        (response created-username)
-                                       (status (response nil) 417)))))
-                            )
+                                       (status (response nil) 417))))))
 
                    (GET "/logout" [] (-> (response nil)
                                          (assoc :session {})))
                    (POST "/login" [username password :as request]
                          (if-let [user (user-service/authenticate service username password)]
                            (let [updated-session (assoc (:session request) :identity (keyword username))]
-                            (-> (response user)
-                                (assoc :session updated-session)))
+                             (-> (:username user)
+                                 (response)
+                                 (assoc :session updated-session)))
                            (status (response nil) 401)))
                    (ANY "*" [] (route/not-found "")))))
 

@@ -32,8 +32,8 @@
   (def server (get-app))
   (testing "create user and expecting to get username"
     (let [response (server (-> (mock/request :post "/api/users/createuser")
-                                  (mock/content-type "application/json")
-                                  (mock/body "{\"username\": \"test2\", \"password\":\"testpass\"}")))]
+                               (mock/content-type "application/json")
+                               (mock/body "{\"username\": \"test2\", \"password\":\"testpass\"}")))]
       
       (is (= (:status response) 200))
       (is (= (:body response) "test2"))))
@@ -44,3 +44,12 @@
       
       (is (= (:status response) 417))
       (is (= (:body response) nil)))))
+
+(deftest timestamps
+  (def server (get-app))
+  (testing "getting timestamps - work in progress"
+    (def login (server (mock/request :post "/api/login" {:username "test2", :password "testpass"})))
+    (server (-> (mock/request :post "/api/users/createuser")
+                 (mock/content-type "application/json")
+                 (mock/body "{\"username\": \"test2\", \"password\":\"testpass\"}")))
+    (dotimes [_ 5] login)))

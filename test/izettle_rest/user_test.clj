@@ -5,7 +5,8 @@
 
 (use-fixtures :each
   (fn [tests]
-    (def db (->UserDB (atom []) (fn [x] (str "hashedpass" x))))
+    (def db (->UserDB (atom []) (fn [x] (str "hashedpass" x))
+                      (fn [x y] (= y (str "hashedpass" x)))))
     (tests)))
 
 

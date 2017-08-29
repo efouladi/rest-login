@@ -10,6 +10,7 @@
             [buddy.auth.backends :as backends]
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.hashers :as hashers]
             [izettle-rest.user.protocol :as user-service]
             [izettle-rest.user.inmemory-user-service :refer (->UserDB)]
             ))
@@ -60,5 +61,5 @@
        (wrap-defaults defaults))
    (wrap-defaults site-routes site-defaults)))
 
-(def app (config-app (->UserDB (atom []) (fn [x] (str x "plushash")))))
+(def app (config-app (->UserDB (atom []) hashers/derive hashers/check)))
  

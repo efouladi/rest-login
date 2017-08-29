@@ -8,7 +8,7 @@
 (defn add-timestamp [index]
   (fn [users] (update-in users [index :timestamps] #(conj (vec (take-last 4 %)) (System/currentTimeMillis)))))
 
-(defrecord UserDB [users hash-fun]
+(defrecord UserDB [users hash-fun hash-check-fun]
   user-service/IUser
   (get-timestamps [this username]
     (->> (find-user username users)
@@ -16,7 +16,7 @@
          (:timestamps)))
   (authenticate [this username password]
     (let [[index user] (find-user username users)]
-      (when (= (hash-fun password) (:password user))
+      (when (hash-check-fun password (:password user))
         (get (swap! users (add-timestamp index)) index))))
 
   (add-user! [this username password]

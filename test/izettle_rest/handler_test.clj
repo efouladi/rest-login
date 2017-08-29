@@ -7,7 +7,9 @@
 
 
 (defn get-app []
-  (config-app (->UserDB (atom [{:username "test" :password "testpassplushash"}]) (fn [x] (str x "plushash")))))
+  (config-app (->UserDB (atom [{:username "test" :password "testpassplushash"}])
+                        (fn [x] (str x "plushash"))
+                        (fn [x y] (= y (str x "plushash"))))))
 
 (deftest test-app
   (testing "main route"

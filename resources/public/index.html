@@ -46,8 +46,8 @@
                          });
                      },
                      createUser: function (event) {
-                         fetch('/api/createuser', {
-                             method: 'PUT',
+                         fetch('/api/users/createuser', {
+                             method: 'POST',
                              headers: {
                               'Content-Type': 'application/json'
                              },

@@ -96,7 +96,7 @@
             <div v-else>
                 <ul>
                   <li v-for="timestamp in timestamps">
-                    {{ timestamp }}
+                    {{ new Date(timestamp) }}
                   </li>
                 </ul>
                 <button v-on:click="logout">Log out</button>

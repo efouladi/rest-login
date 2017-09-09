@@ -25,9 +25,10 @@
   (routes (context "/api" []
                    (context "/users" []
                             (GET "/:username" [username :as request]
-                                 (if-not (authenticated? request)
+                                 (if (and (authenticated? request) (= (keyword username) (:identity request)))
+                                   (response  {:timestamps (user-service/get-timestamps service username)})
                                    (throw-unauthorized)
-                                   (response  {:timestamps (user-service/get-timestamps service username)})))
+                                   ))
                             (POST "/createuser" request
                                  (let [username (get-in request [:body "username"]) password (get-in request [:body "password"])]
                                    (if (or (s/blank? username) (s/blank? password))
